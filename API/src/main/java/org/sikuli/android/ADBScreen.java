@@ -5,14 +5,16 @@
 package org.sikuli.android;
 
 import org.sikuli.basics.Debug;
-import org.sikuli.script.*;
+import org.sikuli.script.Location;
+import org.sikuli.script.Region;
+import org.sikuli.script.ScreenImage;
 import org.sikuli.script.support.IRobot;
 import org.sikuli.script.support.IScreen;
-import org.sikuli.util.*;
+import org.sikuli.util.EventObserver;
+import org.sikuli.util.EventSubject;
+import org.sikuli.util.OverlayCapturePrompt;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Rectangle;
 
 /**
  * Created by Törcsi on 2016. 06. 26.

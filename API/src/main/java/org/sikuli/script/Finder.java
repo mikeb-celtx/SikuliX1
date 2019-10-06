@@ -562,8 +562,6 @@ public class Finder implements Iterator<Match> {
   }
 //</editor-fold>
 
-//</editor-fold>
-
   public static class Finder2 {
 
     static {
@@ -1200,6 +1198,23 @@ public class Finder implements Iterator<Match> {
       return bImg;
     }
 
+    public static BufferedImage adbScreenImageConvert(byte[] image, int actW, int actH) {
+      Mat matImage = new Mat();
+      Mat matOrg = new Mat(actH, actW, CvType.CV_8UC4);
+      matOrg.put(0, 0, image);
+      List<Mat> matsOrg = new ArrayList<Mat>();
+      Core.split(matOrg, matsOrg);
+      matsOrg.remove(3);
+      List<Mat> matsImage = new ArrayList<Mat>();
+      matsImage.add(matsOrg.get(2));
+      matsImage.add(matsOrg.get(1));
+      matsImage.add(matsOrg.get(0));
+      Core.merge(matsImage, matImage);
+      BufferedImage bImage = new BufferedImage(matImage.width(), matImage.height(), BufferedImage.TYPE_3BYTE_BGR);
+      byte[] bImageData = ((DataBufferByte) bImage.getRaster().getDataBuffer()).getData();
+      matImage.get(0, 0, bImageData);
+      return bImage;
+    }
     //</editor-fold>
   }
 

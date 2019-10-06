@@ -4,19 +4,17 @@
 
 package org.sikuli.android;
 
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
 import org.sikuli.basics.Debug;
 import org.sikuli.basics.FileManager;
-import org.sikuli.script.support.RunTime;
+import org.sikuli.script.Finder;
 import org.sikuli.script.ScreenImage;
+import org.sikuli.script.support.RunTime;
 import se.vidstige.jadb.JadbDevice;
 import se.vidstige.jadb.JadbException;
 
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,22 +77,20 @@ public class ADBDevice {
       } else {
         adbDevice.initDevice(adbDevice);
         adbDevice.adbExec = ADBClient.getADB();
-        RunTime.loadLibrary(Core.NATIVE_LIBRARY_NAME);
       }
     }
     return adbDevice;
   }
 
   public static ADBDevice init(int id) {
-      ADBDevice adbDevice = new ADBDevice();
-      adbDevice.device = ADBClient.getDevice(id);
-      if (adbDevice.device == null) {
-        return null;
-      } else {
-        adbDevice.initDevice(adbDevice);
-        adbDevice.adbExec = ADBClient.getADB();
-        RunTime.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-      }
+    ADBDevice adbDevice = new ADBDevice();
+    adbDevice.device = ADBClient.getDevice(id);
+    if (adbDevice.device == null) {
+      return null;
+    } else {
+      adbDevice.initDevice(adbDevice);
+      adbDevice.adbExec = ADBClient.getADB();
+    }
     return adbDevice;
   }
 
@@ -174,17 +170,10 @@ public class ADBDevice {
   }
 
   public BufferedImage captureDeviceScreen(int x, int y, int w, int h) {
-    Mat matImage = captureDeviceScreenMat(x, y, w, h);
-    BufferedImage bImage = null;
-    if (matImage != null) {
-      bImage = new BufferedImage(matImage.width(), matImage.height(), BufferedImage.TYPE_3BYTE_BGR);
-      byte[] bImageData = ((DataBufferByte) bImage.getRaster().getDataBuffer()).getData();
-      matImage.get(0, 0, bImageData);
-    }
-    return bImage;
+    return captureDeviceScreenImage(x, y, w, h);
   }
 
-  public Mat captureDeviceScreenMat(int x, int y, int actW, int actH) {
+  private BufferedImage captureDeviceScreenImage(int x, int y, int actW, int actH) {
     log(lvl, "captureDeviceScreenMat: enter: [%d,%d %dx%d]", x, y, actW, actH);
     byte[] imagePrefix = new byte[12];
     byte[] image = new byte[0];
@@ -195,9 +184,9 @@ public class ADBDevice {
     int currentW;
     int currentH;
     int channels = 4;
-    Mat matImage = new Mat();
+    Debug timer = Debug.startTimer();
+    long duration = 0;
     try (InputStream deviceOut = device.execute("screencap")) {
-      Debug timer = Debug.startTimer();
       while (deviceOut.available() < 12) ;
       deviceOut.read(imagePrefix);
       if (imagePrefix[8] != 0x01) {
@@ -221,7 +210,7 @@ public class ADBDevice {
           actH = currentH - y;
         }
       }
-      long duration = timer.lap("");
+      duration = timer.lap("");
       int nPixels = actW * actH;
       image = new byte[nPixels * channels];
       int atImage = 0;
@@ -264,22 +253,13 @@ public class ADBDevice {
         }
         break;
       }
-      Mat matOrg = new Mat(actH, actW, CvType.CV_8UC4);
-      matOrg.put(0, 0, image);
-      List<Mat> matsOrg = new ArrayList<Mat>();
-      Core.split(matOrg, matsOrg);
-      matsOrg.remove(3);
-      List<Mat> matsImage = new ArrayList<Mat>();
-      matsImage.add(matsOrg.get(2));
-      matsImage.add(matsOrg.get(1));
-      matsImage.add(matsOrg.get(0));
-      Core.merge(matsImage, matImage);
-      log(lvl, "captureDeviceScreenMat: exit: [%d,%d %dx%d] %d (%d)",
-              x, y, actW, actH, duration, timer.end());
     } catch (Exception e) {
       log(-1, "captureDeviceScreenMat: [%d,%d %dx%d] %s", x, y, actW, actH, e);
     }
-    return matImage;
+    BufferedImage bImage = Finder.Finder2.adbScreenImageConvert(image, actW, actH);
+    log(lvl, "captureDeviceScreenMat: exit: [%d,%d %dx%d] %d (%d)",
+            x, y, actW, actH, duration, timer.end());
+    return bImage;
   }
 
   private int byte2int(byte[] bytes, int start, int len) {
