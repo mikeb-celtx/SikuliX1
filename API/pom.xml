@@ -76,6 +76,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.sikulix</groupId>
+      <artifactId>sikulix2opencv</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.python</groupId>
       <artifactId>jython-standalone</artifactId>
       <version>${sikulixjythonversion}</version>
