@@ -4,18 +4,14 @@
 package org.sikuli.script.support;
 
 import org.apache.commons.cli.CommandLine;
-import org.opencv.core.Core;
-import org.sikuli.android.ADBScreen;
 import org.sikuli.basics.*;
 import org.sikuli.natives.WinUtil;
 import org.sikuli.script.*;
-import org.sikuli.script.runnerSupport.JythonSupport;
 import org.sikuli.script.support.IScriptRunner.EffectiveRunner;
 import org.sikuli.util.CommandArgs;
 import org.sikuli.util.CommandArgsEnum;
 import org.sikuli.script.runners.ProcessRunner;
 import org.sikuli.util.Highlight;
-import org.sikuli.vnc.VNCScreen;
 
 import java.awt.*;
 import java.io.*;
@@ -856,7 +852,7 @@ public class RunTime {
   public String SikuliJRuby;
   public String SikuliJRubyMaven;
 
-  public static final String libOpenCV = Core.NATIVE_LIBRARY_NAME;
+  //public static final String libOpenCV = Core.NATIVE_LIBRARY_NAME;
   public final static String runCmdError = "*****error*****";
   public static String NL = "\n";
   public File fLibsProvided;
@@ -1283,8 +1279,7 @@ public class RunTime {
       Settings.setShowActions(false);
       FindFailed.reset();
     }
-    VNCScreen.stopAll();
-    ADBScreen.stop();
+    stopOtherScreens();
     Observing.cleanUp();
     HotkeyManager.reset(isTerminating);
     if (null != cleanupRobot) {
@@ -1293,6 +1288,24 @@ public class RunTime {
     Mouse.reset();
     if (isTerminating) {
       stopPythonServer();
+    }
+  }
+
+  private static void stopOtherScreens() {
+    //VNCScreen.stopAll();
+    try {
+      Class<?> cVNCScreen = Class.forName("org.sikuli.vnc.VNCScreen");
+      Method mStopAll = cVNCScreen.getMethod("stopAll");
+      mStopAll.invoke(null);
+      runTime.logp("");
+    } catch (Exception e) {
+    }
+    //ADBScreen.stop();
+    try {
+      Class<?> cADBScreen = Class.forName("org.sikuli.android.ADBScreen");
+      Method mStop = cADBScreen.getMethod("stop");
+      mStop.invoke(null);
+    } catch (Exception e) {
     }
   }
 
@@ -1892,15 +1905,8 @@ public class RunTime {
     if (runningJar) {
       logp("executing jar: %s", fSxBaseJar);
     }
-    if (Debug.getDebugLevel() > minLvl - 1 || isJythonReady) {
+    if (Debug.getDebugLevel() > minLvl - 1) {
       dumpClassPath("sikulix");
-      if (isJythonReady) {
-        int saveLvl = Debug.getDebugLevel();
-        Debug.setDebugLevel(lvl);
-        JythonSupport.get().showSysPath();
-        Screen.showMonitors();
-        Debug.setDebugLevel(saveLvl);
-      }
     }
     logp("***** show environment end");
   }

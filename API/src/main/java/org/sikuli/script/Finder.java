@@ -6,7 +6,6 @@ package org.sikuli.script;
 import net.sourceforge.tess4j.Tesseract1;
 import net.sourceforge.tess4j.Word;
 import org.opencv.core.*;
-import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.sikuli.basics.Debug;
@@ -568,7 +567,7 @@ public class Finder implements Iterator<Match> {
   public static class Finder2 {
 
     static {
-      RunTime.loadLibrary(RunTime.libOpenCV);
+      RunTime.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
 
     protected static void init() {
@@ -973,7 +972,7 @@ public class Finder implements Iterator<Match> {
         int x2 = 0;
         int y2 = 0;
         List<org.opencv.core.Point> points = contour.toList();
-        for (Point point : points) {
+        for (org.opencv.core.Point point : points) {
           int x = (int) point.x;
           int y = (int) point.y;
           //log.trace("x: %d y: %d", x, y);

@@ -79,7 +79,7 @@ public class ADBDevice {
       } else {
         adbDevice.initDevice(adbDevice);
         adbDevice.adbExec = ADBClient.getADB();
-        RunTime.loadLibrary(RunTime.libOpenCV);
+        RunTime.loadLibrary(Core.NATIVE_LIBRARY_NAME);
       }
     }
     return adbDevice;
@@ -93,7 +93,7 @@ public class ADBDevice {
       } else {
         adbDevice.initDevice(adbDevice);
         adbDevice.adbExec = ADBClient.getADB();
-        RunTime.loadLibrary(RunTime.libOpenCV);
+        RunTime.loadLibrary(Core.NATIVE_LIBRARY_NAME);
       }
     return adbDevice;
   }
