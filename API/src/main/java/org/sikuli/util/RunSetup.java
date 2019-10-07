@@ -719,7 +719,7 @@ public class RunSetup {
             }
           }
           logPlus(lvl, "checking usability of bundled, provided or built libs");
-          if (!RunTime.loadLibrary(LinuxSupport.slibVision, useLibsProvided)) {
+          if (!loadLibrary(LinuxSupport.slibVision, useLibsProvided)) {
             logPlus(-1, "libVisionproxy.so finally not useable");
             terminate("Giving up!");
           } else logPlus(lvl, "Bundled, provided or built libVisionproxy.so is useable");
@@ -1219,6 +1219,12 @@ public class RunSetup {
     finalCleanup();
 
     System.exit(RunTime.testing ? 1 : 0);
+  }
+
+  public static boolean loadLibrary(String libname, boolean useLibsProvided) {
+    RunTime runTime = RunTime.get();
+    runTime.useLibsProvided = useLibsProvided;
+    return runTime.loadLibrary(libname);
   }
 
   private static String arrayToString(String[] args) {

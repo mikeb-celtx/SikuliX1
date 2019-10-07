@@ -1423,8 +1423,15 @@ public class RunTime {
     return sxOptions;
   }
   //</editor-fold>
+  
+  //<editor-fold defaultstate="collapsed" desc="10 native libs handling">
+  public static boolean loadLibrary(String libname) {
+    if (isTerminating) {
+      return false;
+    }
+    return RunTime.get().libsLoad(libname);
+  }
 
-  //<editor-fold defaultstate="collapsed" desc="11 libs export">
   private boolean libsLoad(String libName) {
     log(lvl, "loadlib: trying %s", libName);
     String msg = "loadLib: %s";
@@ -1469,8 +1476,8 @@ public class RunTime {
           System.load(fLib.getAbsolutePath());
         }
       } catch (Exception e) {
-          log(-1,"not usable: %s", e.getMessage());
-          terminate(999, "problem with native library: " + libName);
+        log(-1,"not usable: %s", e.getMessage());
+        terminate(999, "problem with native library: " + libName);
       } catch (UnsatisfiedLinkError e) {
         log(-1, msg + " (failed) probably dependent libs missing:\n%s", libName, e.getMessage());
         String helpURL = "https://github.com/RaiMan/SikuliX1/wiki/macOS-Linux:-Support-Libraries-for-OpenCV-4";
@@ -1556,7 +1563,7 @@ public class RunTime {
         }
       }
       if (libVersion.isEmpty() || !libVersion.equals(getVersionShort()) ||
-              libStamp.length() != sxBuildStamp.length() || 0 != libStamp.compareTo(sxBuildStamp)) {
+          libStamp.length() != sxBuildStamp.length() || 0 != libStamp.compareTo(sxBuildStamp)) {
         FileManager.deleteFileOrFolder(fLibsFolder);
         log(lvl, "libsExport: folder has wrong content: %s (%s - %s)", fLibsFolder, libVersion, libStamp);
       }
@@ -1568,7 +1575,7 @@ public class RunTime {
         terminate(999, "libsExport: folder not available: " + fLibsFolder.toString());
       }
       String libToken = String.format("%s_%s_MadeForSikuliX64%s.txt",
-              getVersionShort(), sxBuildStamp, runningMac ? "M" : (runningWindows ? "W" : "L"));
+          getVersionShort(), sxBuildStamp, runningMac ? "M" : (runningWindows ? "W" : "L"));
       FileManager.writeStringToFile("*** Do not delete this file ***\n", new File(fLibsFolder, libToken));
       libMsg = "folder created:";
       List<String> nativesList = getResourceList(fpJarLibs);
@@ -1619,32 +1626,6 @@ public class RunTime {
     }
     log(lvl, "libsExport: " + libMsg + " %s (%s - %s)", fLibsFolder, getVersionShort(), sxBuildStamp);
     areLibsExported = true;
-  }
-//</editor-fold>
-
-  //<editor-fold defaultstate="collapsed" desc="10 native libs handling">
-
-  /**
-   * INTERNAL USE: load a native library from the libs folder
-   *
-   * @param libname name of library without prefix/suffix/ending
-   */
-  public static boolean loadLibrary(String libname) {
-    if (isTerminating) {
-      return false;
-    }
-    return RunTime.get().libsLoad(libname);
-  }
-
-  /**
-   * INTERNAL USE: load a native library from the libs folder
-   *
-   * @param libname name of library without prefix/suffix/ending
-   */
-  public static boolean loadLibrary(String libname, boolean useLibsProvided) {
-    RunTime runTime = RunTime.get();
-    runTime.useLibsProvided = useLibsProvided;
-    return loadLibrary(libname);
   }
 
   private void addToWindowsSystemPath(File fLibsFolder) {
