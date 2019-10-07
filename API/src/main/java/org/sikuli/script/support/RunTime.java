@@ -18,10 +18,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
+import java.net.*;
 import java.security.CodeSource;
 import java.util.List;
 import java.util.*;
@@ -1449,7 +1446,6 @@ public class RunTime {
     if (!areLibsExported) {
       terminate(999, "loadLib: deferred exporting of libs did not work");
     }
-    File fLibsFolderUsed = fLibsFolder;
     if (runningWindows) {
       libName += ".dll";
     } else if (runningMac) {
@@ -1469,17 +1465,14 @@ public class RunTime {
         }
       }
       if (vLib) {
-        level++;
         msg += " already loaded";
         log(level, msg, libName);
         return true;
       }
     }
     boolean shouldTerminate = false;
-    Error loadError = null;
     while (!shouldTerminate) {
       shouldTerminate = true;
-      loadError = null;
       try {
         if (runningLinux && libName.startsWith("libopen")) {
           libName = "opencv_java";
@@ -1487,19 +1480,23 @@ public class RunTime {
         } else {
           System.load(fLib.getAbsolutePath());
         }
-      } catch (Error e) {
-        loadError = e;
-        if (runningLinux) {
-          log(-1, msg + " not usable: \n%s", libName, loadError);
+      } catch (Exception e) {
+          log(-1,"not usable: %s", e.getMessage());
           terminate(999, "problem with native library: " + libName);
+      } catch (UnsatisfiedLinkError e) {
+        log(-1, msg + " (failed) probably dependent libs missing:\n%s", libName, e.getMessage());
+        String helpURL = "https://github.com/RaiMan/SikuliX1/wiki/macOS-Linux:-Support-Libraries-for-OpenCV-4";
+        if (RunTime.isIDE()) {
+          Debug.error("Save your work, correct the problem and restart the IDE!");
+          try {
+            Desktop.getDesktop().browse(new URI(helpURL));
+          } catch (IOException ex) {
+          } catch (URISyntaxException ex) {
+          }
         }
+        Debug.error("see: " + helpURL);
+        terminate(999, "problem with native library: " + libName);
       }
-    }
-    if (loadError != null) {
-      log(-1, "Problematic lib: %s (...TEMP...)", fLib);
-      log(-1, "%s loaded, but it might be a problem with needed dependent libraries\nERROR: %s",
-              libName, loadError.getMessage().replace(fLib.getAbsolutePath(), "...TEMP..."));
-      terminate(999, "problem with native library: " + libName);
     }
     libsLoaded.put(libName, true);
     log(level, msg + " (success)", libName);
@@ -1675,14 +1672,12 @@ public class RunTime {
       runTime.log(4, "cleanTemp: " + bridjFile.getName());
       FileManager.deleteFileOrFolder(bridjFile);
     }
-    //TODO String syspath = SysJNA.WinKernel32.getEnvironmentVariable("PATH");
     String syspath = WinUtil.getEnv("PATH");
     if (syspath == null) {
       terminate(999, "addToWindowsSystemPath: cannot access system path");
     } else {
       String libsPath = fLibsFolder.getAbsolutePath();
       if (!syspath.toUpperCase().contains(libsPath.toUpperCase())) {
-        // TODO if (SysJNA.WinKernel32.setEnvironmentVariable("PATH", libsPath + ";" + syspath)) {
         if (null != (syspath = WinUtil.setEnv("PATH", libsPath + ";" + syspath))) {
           if (!syspath.toUpperCase().contains(libsPath.toUpperCase())) {
             log(-1, "addToWindowsSystemPath: adding to system path did not work:\n%s", syspath);
