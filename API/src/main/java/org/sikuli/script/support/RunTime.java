@@ -37,15 +37,13 @@ import java.util.zip.ZipInputStream;
  */
 public class RunTime {
 
-  private static final String osNameShort = System.getProperty("os.name").substring(0, 1).toLowerCase();
-
+  //<editor-fold desc="01 startup">
   public static boolean isIDE() {
     return startAsIDE;
   }
 
   private static boolean startAsIDE = true;
 
-  //<editor-fold desc="01 startup">
   public static void start(RunTime.Type type, String[] args) {
 
     Debug.init();
@@ -733,6 +731,8 @@ public class RunTime {
     JAR, CLASSES, OTHER
   }
 
+  private static final String osNameShort = System.getProperty("os.name").substring(0, 1).toLowerCase();
+
   public RunType runningAs = RunType.OTHER;
 
   public boolean runningIDE() {
@@ -1036,18 +1036,6 @@ public class RunTime {
   }
 */
   //</editor-fold>
-
-  public Rectangle getMonitor(int n) {
-    if (Screen.isHeadless()) {
-      return new Rectangle();
-    }
-    return Screen.getMonitor(n);
-  }
-
-  public Rectangle hasPoint(Point aPoint) {
-    return Screen.hasPoint(aPoint);
-  }
-
 
   //<editor-fold defaultstate="collapsed" desc="05 global init">
   File isRunning = null;
@@ -1816,6 +1804,17 @@ public class RunTime {
 //</editor-fold>
 
   //<editor-fold defaultstate="collapsed" desc="20 helpers">
+  public Rectangle getMonitor(int n) {
+    if (Screen.isHeadless()) {
+      return new Rectangle();
+    }
+    return Screen.getMonitor(n);
+  }
+
+  public Rectangle hasPoint(Point aPoint) {
+    return Screen.hasPoint(aPoint);
+  }
+
   public void crash() {
     int x = 1 / 0;
   }
