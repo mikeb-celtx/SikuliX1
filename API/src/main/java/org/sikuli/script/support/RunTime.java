@@ -1423,7 +1423,7 @@ public class RunTime {
     return sxOptions;
   }
   //</editor-fold>
-  
+
   //<editor-fold defaultstate="collapsed" desc="10 native libs handling">
   public static boolean loadLibrary(String libname) {
     if (isTerminating) {
